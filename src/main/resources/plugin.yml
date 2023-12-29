@@ -1,0 +1,145 @@
+name: NeroChat
+version: ${project.version}
+api-version: 1.13
+main: me.softik.nerochat.NeroChat
+authors: [ _Soft1k_ ]
+description: An advanced chat plugin for survival/anarchy servers.
+softdepend: ["PlaceholderAPI"]
+folia-supported: true
+
+commands:
+  ignore:
+    description: Ignore a players chat messages permanently!
+    permission: nerochat.ignore
+    permission-message: You have no permission to do that!
+  whisper:
+    description: Whisper to a player!
+    permission: nerochat.whisper
+    permission-message: You have no permission to do that!
+    aliases:
+      - tell
+      - w
+      - pm
+      - msg
+  reply:
+    description: Reply to the last message someone sent to you!
+    permission: nerochat.reply
+    permission-message: You have no permission to do that!
+    aliases:
+      - r
+  last:
+    description: Message the last person you messaged!
+    permission: nerochat.last
+    permission-message: You have no permission to do that!
+    aliases:
+      - l
+  ignorelist:
+    description: List all ignored players!
+    permission: nerochat.ignorelist
+    permission-message: You have no permission to do that!
+  togglewhispering:
+    description: Prevent getting whispered to!
+    permission: nerochat.togglewhispering
+    permission-message: You have no permission to do that!
+    aliases:
+      - toggleprivatemsgs
+      - toggletells
+  togglechat:
+    description: Prevent getting chat messages!
+    permission: nerochat.togglechat
+    permission-message: You have no permission to do that!
+  nerochat:
+    description: Main command!
+    permission: nerochat.command
+    permission-message: You have no permission to do that!
+    usage: "§cUsage: /<command> <reload>"
+permissions:
+  nerochat.RegexFilterBypass:
+    description: Permission RegexFilter Bypass.
+  nerochat.ignore:
+    description: Permission for /ignore!
+    children:
+      nerochat.ignorelist: true
+  nerochat.last:
+    description: Permission for /last!
+  nerochat.reply:
+    description: Permission for /reply!
+  nerochat.whisper:
+    description: Permission for /whisper!
+    children:
+      nerochat.playernamereply: true
+      nerochat.togglewhispering: true
+  nerochat.playernamereply:
+    description: Make player names clickable!
+  nerochat.ignorelist:
+    description: Permission for /ignorelist!
+  nerochat.togglewhispering:
+    description: Permission for /togglewhispering!
+  nerochat.togglechat:
+    description: Permission for /togglechat!
+  nerochat.command:
+    description: Permission for /nerochat!
+  nerochat.reload:
+    description: Permission for /nerochat reload!
+    children:
+      nerochat.command: true
+  nerochat.GREEN:
+    description: Just another chat color!
+  nerochat.BLUE:
+    description: Just another chat color!
+  nerochat.RED:
+    description: Just another chat color!
+  nerochat.AQUA:
+    description: Just another chat color!
+  nerochat.GOLD:
+    description: Just another chat color!
+  nerochat.YELLOW:
+    description: Just another chat color!
+  nerochat.GRAY:
+    description: Just another chat color!
+  nerochat.BLACK:
+    description: Just another chat color!
+  nerochat.DARK_GREEN:
+    description: Just another chat color!
+  nerochat.DARK_RED:
+    description: Just another chat color!
+  nerochat.DARK_GRAY:
+    description: Just another chat color!
+  nerochat.DARK_BLUE:
+    description: Just another chat color!
+  nerochat.DARK_AQUA:
+    description: Just another chat color!
+  nerochat.DARK_PURPLE:
+    description: Just another chat color!
+  nerochat.LIGHT_PURPLE:
+    description: Just another chat color!
+  nerochat.ITALIC:
+    description: Just another chat color!
+  nerochat.UNDERLINE:
+   description: Just another chat color!
+  nerochat.BOLD:
+    description: Just another chat color!
+  nerochat.STRIKETHROUGH:
+    description: Just another chat color!
+  nerochat.version:
+    description: Permission for /nerochat version
+  nerochat.bypass:
+    description: Allows to talk to vanished people or people with whispering disabled.
+  nerochat.player:
+    description: Default permissions for players!
+    children:
+      nerochat.last: true
+      nerochat.reply: true
+      nerochat.whisper: true
+      nerochat.ignore: true
+      nerochat.togglechat: true
+      nerochat.GREEN: true
+    default: true
+  nerochat.admin:
+    description: Default permissions for admins!
+    children:
+      nerochat.reload: true
+      nerochat.version: true
+      nerochat.bypass: true
+      nerochat.RegexFilterBypass: true
+    default: op
