@@ -55,18 +55,19 @@ public class PreventChatSpam implements NeroChatModule, Listener {
         HandlerList.unregisterAll(this);
     }
 
+
     @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     private void onPlayerChat(AsyncPlayerChatEvent event) {
         Player player = event.getPlayer();
         if (player.hasPermission("anarchyexploitfixes.chatbypass")) return;
 
         String message = event.getMessage();
+        UUID playerUniqueId = player.getUniqueId();
 
-        final UUID playerUniqueId = player.getUniqueId();
         if (!playersWritingInChat.contains(playerUniqueId)) {
             playersWritingInChat.add(playerUniqueId);
-            plugin.getServer().getScheduler().runTaskLater(
-                    plugin, () -> playersWritingInChat.remove(playerUniqueId), ConfigCache.antiSpamTime
+            plugin.getServer().getScheduler().scheduleSyncDelayedTask(
+                    plugin, () -> playersWritingInChat.remove(playerUniqueId), antiSpamTime
             );
             if (!isSimilarToPreviouslySentMessages(message)) {
                 if (ConfigCache.lenientWordCheckIsEnabled) {
@@ -76,35 +77,38 @@ public class PreventChatSpam implements NeroChatModule, Listener {
                 } else {
                     previouslySentMessages.add(message);
                 }
-                plugin.getServer().getScheduler().runTaskLater(
-                        plugin, () -> previouslySentMessages.remove(message), ConfigCache.antiSpamWordTime
+                plugin.getServer().getScheduler().scheduleSyncDelayedTask(
+                        plugin, () -> previouslySentMessages.remove(message), antiSpamWordTime
                 );
 
                 if (!playersAndTheirMessageCounts.containsKey(playerUniqueId)) {
                     playersAndTheirMessageCounts.put(playerUniqueId, 1);
                 } else {
-                    if (playersAndTheirMessageCounts.get(playerUniqueId) > ConfigCache.messagesPerTime) {
+                    if (playersAndTheirMessageCounts.get(playerUniqueId) > messagesPerTime) {
                         event.setCancelled(true);
-                        if (ConfigCache.logIsEnabled) LogUtils.moduleLog(Level.INFO, name(),
+                        if (shouldNotifyPlayer) player.sendMessage(AnarchyExploitFixes.getLang(player.getLocale()).chat_antispam_tooManyMsgsNotif);
+                        if (logIsEnabled) LogUtils.moduleLog(Level.INFO, name(),
                                 player.getName() + " FAILED to send message due to too many messages in time period."
                         );
                     } else {
                         playersAndTheirMessageCounts.merge(playerUniqueId, 1, Integer::sum);
-                        plugin.getServer().getScheduler().runTaskLater(
-                                plugin, () -> playersAndTheirMessageCounts.merge(playerUniqueId, 1, Integer::sum), ConfigCache.antiSpamCheckTime
+                        plugin.getServer().getScheduler().scheduleSyncDelayedTask(
+                                plugin, () -> playersAndTheirMessageCounts.put(playerUniqueId, playersAndTheirMessageCounts.get(playerUniqueId) - 1), antiSpamCheckTime
                         );
                     }
                 }
 
             } else {
                 event.setCancelled(true);
-                if (ConfigCache.logIsEnabled) LogUtils.moduleLog(Level.INFO, name(),
+                if (shouldNotifyPlayer) player.sendMessage(AnarchyExploitFixes.getLang(player.getLocale()).chat_antispam_tooManyMsgsNotif);
+                if (logIsEnabled) LogUtils.moduleLog(Level.INFO, name(),
                         player.getName() + " FAILED to send message due to suspected duplicate messages."
                 );
             }
         } else {
             event.setCancelled(true);
-            if (ConfigCache.logIsEnabled) LogUtils.moduleLog(Level.INFO, name(),
+            if (shouldNotifyPlayer) player.sendMessage(AnarchyExploitFixes.getLang(player.getLocale()).chat_antispam_tooManyMsgsNotif);
+            if (logIsEnabled) LogUtils.moduleLog(Level.INFO, name(),
                     player.getName() + " FAILED to send message due to slowmode: '"+message+"'"
             );
         }
@@ -113,8 +117,8 @@ public class PreventChatSpam implements NeroChatModule, Listener {
     private boolean isSimilarToPreviouslySentMessages(String newMessage) {
         for (String oldMessage : previouslySentMessages) {
             final double similarity = stringSimilarityInPercent(newMessage, oldMessage);
-            if (similarity >= ConfigCache.antiSpamWordSimilarityPercentage) {
-                if (ConfigCache.logIsEnabled) {
+            if (similarity >= antiSpamWordSimilarityPercentage) {
+                if (logIsEnabled) {
                     LogUtils.moduleLog(Level.WARNING, name(), "Message exceeded similarity limit: " + similarity + "% similar to previously sent message:");
                     LogUtils.moduleLog(Level.WARNING, name(), "'" + oldMessage + "'");
                 }
@@ -132,7 +136,7 @@ public class PreventChatSpam implements NeroChatModule, Listener {
             longer = s2;
             shorter = s1;
         }
-        final double longerLength = longer.length();
+        double longerLength = longer.length();
 
         if (longerLength == 0) return 100;
         return ((longerLength - new LevenshteinDistance().apply(longer, shorter)) / longerLength) * 100;
